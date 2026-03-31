@@ -43,6 +43,9 @@ using namespace nlohmann;
 
 namespace Slic3r { namespace GUI {
 
+namespace {
+std::string to_orca_user_assets_url(const std::string& native_path);
+}
 
 // WCP_Logger
 WCP_Logger::WCP_Logger() {
@@ -680,7 +683,7 @@ void SSWCP_Instance::sw_GetActiveFile()
 
         } else {
             m_res_data["file_name"] = file_name;
-            m_res_data["file_path"] = file_path;
+            m_res_data["file_path"] = to_orca_user_assets_url(file_path);
             send_to_js();
             finish_job();
         }
@@ -3195,7 +3198,7 @@ void SSWCP_MachineOption_Instance::sw_GetFileFilamentMapping()
 
         // file name
         response["filename"] = SSWCP::get_display_filename();
-        response["filepath"] = SSWCP::get_active_filename();
+        response["filepath"] = to_orca_user_assets_url(SSWCP::get_active_filename());
 
         m_res_data = response;
         send_to_js();
@@ -5976,6 +5979,21 @@ void SSWCP_MqttAgent_Instance::sw_mqtt_publish()
 // SSWCP
 TimeoutMap<SSWCP_Instance*, std::shared_ptr<SSWCP_Instance>> SSWCP::m_instance_list;
 constexpr std::chrono::milliseconds SSWCP::DEFAULT_INSTANCE_TIMEOUT;
+
+namespace {
+std::string to_orca_user_assets_url(const std::string& native_path)
+{
+    if (native_path.empty())
+        return native_path;
+    const std::string marker = "/orca_user_assets/";
+    const size_t      pos    = native_path.find(marker);
+    if (pos == std::string::npos)
+        return native_path;
+    std::string rel = native_path.substr(pos + marker.size());
+    std::replace(rel.begin(), rel.end(), '\\', '/');
+    return "orca://app/user_assets/" + rel;
+}
+} // namespace
 
 std::string SSWCP::m_active_gcode_filename = "";
 std::string SSWCP::m_display_gcode_filename = "";

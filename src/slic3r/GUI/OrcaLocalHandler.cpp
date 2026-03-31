@@ -124,6 +124,8 @@ wxFSFile* OrcaLocalHandler::GetFile(const wxString& uri)
         mime = "font/woff2";
     else if (pathForMime.Lower().EndsWith(".ico"))
         mime = "image/x-icon";
+    else if (pathForMime.Lower().EndsWith(".gcode"))
+        mime = "text/plain; charset=utf-8";
 
     wxFSFile * ff = new wxFSFile(stream, uri, mime, wxEmptyString, wxDateTime::Now());
     
